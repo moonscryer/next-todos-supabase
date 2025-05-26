@@ -9,7 +9,7 @@ import {
   toggleTodo,
 } from "@/lib/server-actions";
 import { SubmitButton } from "./SubmitButton";
-import { SubmitCheckbox } from "./SubmitCheckbox";
+import ToggleButton from "./ToggleButton";
 
 export default async function TodoList() {
   const todos = await getAllTodos();
@@ -40,11 +40,11 @@ export default async function TodoList() {
               className="flex items-center gap-3 rounded-lg border p-3"
             >
               {/* ✅ Checkbox toggles checked server-side */}
-              <form action={toggleTodo(todo.id)}>
-                <button type="submit" className="rounded">
-                  <SubmitCheckbox checked={todo.checked} />
-                </button>
-              </form>
+              <ToggleButton
+                todoId={todo.id}
+                checked={todo.checked ? "✓" : ""}
+                toggleAction={toggleTodo(todo.id)} // <-- Call it here to get the server action
+              />
 
               {/* Edit task ----------------------------------------------------- */}
               <form

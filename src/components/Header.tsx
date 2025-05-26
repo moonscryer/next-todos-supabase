@@ -1,9 +1,7 @@
-import Link from "next/link";
-
 const Header = () => {
   return (
     <header>
-      <h1>Felipe's Todo List</h1>
+      <h1>Felipe Todo List</h1>
     </header>
   );
 };

@@ -3,7 +3,7 @@ import { RowDataPacket } from "mysql2";
 export interface Todo {
   id: number;
   task: string;
-  checked: boolean;
+  checked: string;
 }
 
 export interface Id extends RowDataPacket {

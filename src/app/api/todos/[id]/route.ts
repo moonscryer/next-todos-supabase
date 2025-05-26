@@ -3,19 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { task } = await req.json();
-  const updated = await updateTodo(Number(params.id), task);
+  const updated = await updateTodo(Number(params), task);
   return NextResponse.json(updated);
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const deleted = await deleteTodo(Number(params.id));
+    const deleted = await deleteTodo(Number(params));
     return NextResponse.json(deleted); // ✅ Make sure this is returned!
   } catch (e) {
     console.error("Error deleting todo:", e);
@@ -28,8 +28,8 @@ export async function DELETE(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const updated = await checkTodo(Number(params.id));
+  const updated = await checkTodo(Number(params));
   return NextResponse.json(updated);
 }
