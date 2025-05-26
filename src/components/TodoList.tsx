@@ -1,7 +1,6 @@
 import { getAllTodos } from "@/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import {
   createTodo,
@@ -26,7 +25,7 @@ export default async function TodoList() {
         <form action={createTodo} className="flex gap-2">
           <Input
             name="task"
-            placeholder="What needs to be done?"
+            placeholder="What would you like to do?"
             className="flex-1"
             autoComplete="off"
           />
