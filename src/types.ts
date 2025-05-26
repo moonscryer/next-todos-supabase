@@ -9,3 +9,8 @@ export interface Todo {
 export interface Id extends RowDataPacket {
   id: number;
 }
+
+export interface ServerFeedback {
+  type: string;
+  message: string;
+}

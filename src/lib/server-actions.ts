@@ -6,7 +6,7 @@ export const createTodo = async (data: FormData) => {
   const task = (data.get("task") as string)?.trim();
   if (!task) return;
   await addTodo(task);
-  revalidatePath("/"); // refresh every place the list is used
+  revalidatePath("/");
 };
 
 export const saveTodo = (id: number) => {
