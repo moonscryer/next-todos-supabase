@@ -3,56 +3,36 @@ import { connect } from "./connect";
 import { Id, Todo } from "./types";
 
 export const getAllTodos = async (): Promise<Todo[]> => {
-  try {
-    const connection = await connect();
-    const [todos] = await connection.query<Id[]>(
-      "SELECT id, task, checked FROM todos"
-    );
-    return todos.map((todo) => ({
-      id: todo.id,
-      task: todo.task,
-      checked: todo.checked,
-    }));
-  } catch (e) {
-    throw e;
-  }
-};
-
-export const getTodo = async (id: number): Promise<Todo> => {
-  try {
-    const connection = await connect();
-    const [todo] = await connection.query<Id[]>(
-      "SELECT id, task, checked FROM todos WHERE id = ?",
-      [id]
-    );
-    return todo.map((todo) => ({
-      id: todo.id,
-      task: todo.task,
-      checked: todo.checked,
-    }))[0];
-  } catch (e) {
-    throw e;
-  }
+  const connection = await connect();
+  const [rows] = await connection.query<Todo[]>(
+    "SELECT id, task, checked FROM todos ORDER BY id ASC"
+  );
+  return rows.map((row) => ({
+    ...row,
+    checked: Boolean(row.checked),
+  }));
 };
 
 export const addTodo = async (task: string): Promise<Todo> => {
   try {
     const connection = await connect();
 
-    const [result] = await connection.execute<OkPacket[]>(
+    const [result] = await connection.execute<OkPacket>(
       "INSERT INTO todos (task) VALUES (?)",
       [task]
     );
 
-    // @ts-expect-error: result is OkPacket but insertId is valid
     const insertId = result.insertId;
 
-    const [rows] = await connection.query<Id[]>(
+    const [rows] = await connection.query<Todo[]>(
       "SELECT id, task, checked FROM todos WHERE id = ?",
       [insertId]
     );
-
-    return rows[0] as Todo;
+    const todo = rows[0];
+    return {
+      ...todo,
+      checked: Boolean(todo.checked),
+    };
   } catch (e) {
     throw e;
   }

@@ -1,9 +1,9 @@
 import { RowDataPacket } from "mysql2";
 
-export interface Todo {
+export interface Todo extends RowDataPacket {
   id: number;
   task: string;
-  checked: string;
+  checked: boolean;
 }
 
 export interface Id extends RowDataPacket {

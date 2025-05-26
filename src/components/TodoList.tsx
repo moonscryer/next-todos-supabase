@@ -42,7 +42,7 @@ export default async function TodoList() {
               {/* ✅ Checkbox toggles checked server-side */}
               <ToggleButton
                 todoId={todo.id}
-                checked={todo.checked ? "✓" : ""}
+                checked={!!todo.checked ? "✓" : ""}
                 toggleAction={toggleTodo(todo.id)} // <-- Call it here to get the server action
               />
 
