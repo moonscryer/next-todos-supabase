@@ -3,8 +3,7 @@ import { Todo } from "./types";
 
 /* ───────── helpers ───────── */
 
-function assert<T>(error: unknown): asserts error is never {
-  // Narrows `never` so TypeScript understands we already threw
+function assert(error: unknown): asserts error is never {
   if (error) throw error;
 }
 
