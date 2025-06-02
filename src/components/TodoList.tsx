@@ -40,11 +40,13 @@ export default async function TodoList() {
               className="flex items-center gap-3 rounded-lg border p-3"
             >
               {/* ✅ Checkbox toggles checked server-side */}
-              <ToggleButton
-                todoId={todo.id}
-                checked={!!todo.checked ? "✓" : ""}
-                toggleAction={toggleTodo(todo.id)} // <-- Call it here to get the server action
-              />
+              <form action={toggleTodo}>
+                <input type="hidden" name="id" value={todo.id} />
+                <ToggleButton
+                  todoId={todo.id}
+                  checked={!!todo.checked ? "✓" : ""}
+                />
+              </form>
 
               {/* Edit task ----------------------------------------------------- */}
               <form

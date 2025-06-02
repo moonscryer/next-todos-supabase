@@ -19,13 +19,15 @@ export const saveTodo = (id: number) => {
   };
 };
 
-export const toggleTodo = (id: number) => {
-  return async () => {
-    "use server";
-    await checkTodo(id);
-    revalidatePath("/");
-  };
-};
+export async function toggleTodo(formData: FormData) {
+  "use server";
+  const id = Number(formData.get("id"));
+  console.log("Toggling todo", id);
+  if (!id) return;
+
+  await checkTodo(id);
+  revalidatePath("/");
+}
 
 export const removeTodo = (id: number) => {
   return async () => {

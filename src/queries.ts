@@ -66,7 +66,7 @@ export const deleteTodo = async (id: number): Promise<Todo> => {
 export const checkTodo = async (id: number): Promise<Todo> => {
   const supabase = connect();
 
-  /* 1️⃣ read current state (one round-trip) */
+  // 1️⃣ Read current checked state
   const { data: current, error: readError } = await supabase
     .from("todos")
     .select("checked")
@@ -74,14 +74,18 @@ export const checkTodo = async (id: number): Promise<Todo> => {
     .single();
 
   assert(readError);
+  if (!current) throw new Error("Todo not found");
 
-  /* 2️⃣ write back the negated value, returning the full row */
-  const { data, error } = await supabase
+  const newCheckedValue = !current.checked;
+
+  // 2️⃣ Update with toggled value
+  const { data: updated, error: updateError } = await supabase
     .from("todos")
-    .select("checked")
+    .update({ checked: newCheckedValue })
     .eq("id", id)
-    .single<{ checked: boolean }>();
+    .select()
+    .single();
 
-  assert(error);
-  return data;
+  assert(updateError);
+  return updated as Todo;
 };
