@@ -1,12 +1,11 @@
-import { RowDataPacket } from "mysql2";
-
-export interface Todo extends RowDataPacket {
-  id: number;
+export interface Todo {
+  id: number; // or string if you keep Postgres bigints as text
   task: string;
   checked: boolean;
 }
 
-export interface Id extends RowDataPacket {
+/** Kept for compatibility, but you can remove it if unused */
+export interface Id {
   id: number;
 }
 

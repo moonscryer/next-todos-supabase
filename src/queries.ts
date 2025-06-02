@@ -1,98 +1,87 @@
-import { OkPacket } from "mysql2";
 import { connect } from "./connect";
-import { Id, Todo } from "./types";
+import { Todo } from "./types";
+
+/* ───────── helpers ───────── */
+
+function assert<T>(error: unknown): asserts error is never {
+  // Narrows `never` so TypeScript understands we already threw
+  if (error) throw error;
+}
+
+/* ───────── CRUD ───────── */
 
 export const getAllTodos = async (): Promise<Todo[]> => {
-  const connection = await connect();
-  const [rows] = await connection.query<Todo[]>(
-    "SELECT id, task, checked FROM todos ORDER BY id ASC"
-  );
-  return rows.map((row) => ({
-    ...row,
-    checked: Boolean(row.checked),
-  }));
+  const supabase = connect();
+  const { data, error } = await supabase
+    .from("todos")
+    .select("id, task, checked")
+    .order("id", { ascending: true });
+
+  assert(error);
+  return data ?? [];
 };
 
 export const addTodo = async (task: string): Promise<Todo> => {
-  try {
-    const connection = await connect();
+  const supabase = connect();
 
-    const [result] = await connection.execute<OkPacket>(
-      "INSERT INTO todos (task) VALUES (?)",
-      [task]
-    );
+  const { data, error } = await supabase
+    .from("todos")
+    .insert({ task }) // column defaults (checked = false) apply
+    .select("id, task, checked") // `select(...)` returns the inserted row(s)
+    .single();
 
-    const insertId = result.insertId;
-
-    const [rows] = await connection.query<Todo[]>(
-      "SELECT id, task, checked FROM todos WHERE id = ?",
-      [insertId]
-    );
-    const todo = rows[0];
-    return {
-      ...todo,
-      checked: Boolean(todo.checked),
-    };
-  } catch (e) {
-    throw e;
-  }
+  assert(error);
+  return data;
 };
 
 export const updateTodo = async (id: number, task: string): Promise<Todo> => {
-  try {
-    const connection = await connect();
+  const supabase = connect();
 
-    await connection.execute("UPDATE todos SET task = ? WHERE id = ?", [
-      task,
-      id,
-    ]);
+  const { data, error } = await supabase
+    .from("todos")
+    .update({ task })
+    .eq("id", id)
+    .select("id, task, checked")
+    .single();
 
-    const [rows] = await connection.query<Id[]>(
-      "SELECT id, task, checked FROM todos WHERE id = ?",
-      [id]
-    );
-
-    return rows[0] as Todo;
-  } catch (e) {
-    throw e;
-  }
+  assert(error);
+  return data;
 };
 
 export const deleteTodo = async (id: number): Promise<Todo> => {
-  try {
-    const connection = await connect();
+  const supabase = connect();
 
-    const [rows] = await connection.query<Id[]>(
-      "SELECT id, task, checked FROM todos WHERE id = ?",
-      [id]
-    );
+  // PostgREST patch/delete can return rows when you add `.select()`
+  const { data, error } = await supabase
+    .from("todos")
+    .delete()
+    .eq("id", id)
+    .select("id, task, checked")
+    .single();
 
-    const todo = rows[0] as Todo;
-
-    await connection.execute("DELETE FROM todos WHERE id = ?", [id]);
-
-    return todo;
-  } catch (e) {
-    throw e;
-  }
+  assert(error);
+  return data;
 };
 
 export const checkTodo = async (id: number): Promise<Todo> => {
-  try {
-    const connection = await connect();
+  const supabase = connect();
 
-    await connection.execute(
-      "UPDATE todos SET checked = NOT checked WHERE id = ?",
-      [id]
-    );
+  /* 1️⃣ read current state (one round-trip) */
+  const { data: current, error: readError } = await supabase
+    .from("todos")
+    .select("checked")
+    .eq("id", id)
+    .single();
 
-    const [rows] = await connection.query<Id[]>(
-      "SELECT id, task, checked FROM todos WHERE id = ?",
-      [id]
-    );
+  assert(readError);
 
-    return rows[0] as Todo;
-  } catch (e) {
-    throw e;
-  }
+  /* 2️⃣ write back the negated value, returning the full row */
+  const { data, error } = await supabase
+    .from("todos")
+    .select("checked")
+    .eq("id", id)
+    .single<{ checked: boolean }>();
+
+  assert(error);
+  return data;
 };

@@ -1,34 +1,31 @@
-import mysql, { Connection, ConnectionOptions } from "mysql2/promise";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const connOptions: ConnectionOptions = {
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database: "todos",
-  port: 8889,
-  connectionLimit: 10,
-};
+let supabase: SupabaseClient | undefined;
 
-let connection: Connection | undefined = undefined;
+/**
+ * Returns a singleton Supabase client.
+ * Kept the name `connect()` so existing imports continue to work.
+ */
+export function connect(): SupabaseClient {
+  if (supabase) return supabase;
 
-async function exit() {
-  try {
-    connection?.end();
-    console.log("disconnected from database");
-    connection = undefined;
-  } catch (e) {
-    throw e;
+  // Works for plain Node, Next.js, Vite, etc.
+  const supabaseUrl =
+    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const supabaseAnonKey =
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    "";
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Missing SUPABASE_URL or SUPABASE_ANON_KEY env variables – check your .env(.local)"
+    );
   }
-  process.exit(0);
-}
 
-export async function connect(): Promise<Connection> {
-  try {
-    if (connection) return connection;
-    connection = await mysql.createConnection(connOptions);
-    process.on("SIGINT", () => exit());
-    return connection;
-  } catch (e) {
-    throw e;
-  }
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false }, // purely server-side API client
+  });
+
+  return supabase;
 }
